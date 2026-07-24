@@ -129,6 +129,10 @@ src/test/
 .idea/intellij-javadocs-4.0.1.xml
 run
 server/level.dat
+<<<<<<< HEAD
 bin/*
 # vscode
 .vscode
+=======
+bin/*
+>>>>>>> 9d9c4ea98bb9ec6a50ae7dac21f11fbf41de5f49

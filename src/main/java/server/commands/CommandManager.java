@@ -1,5 +1,6 @@
 package server.commands;
 
+import server.commands.Command;
 
 import java.util.HashMap;
 import java.util.Map;

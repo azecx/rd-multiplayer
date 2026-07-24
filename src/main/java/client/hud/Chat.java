@@ -30,7 +30,6 @@ public class Chat {
 
     private final int maxMessages;
 
-    @SuppressWarnings("unused")
     private final int x, y, width, height;
 
     private String input = "";
