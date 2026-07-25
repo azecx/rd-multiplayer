@@ -1,6 +1,4 @@
 package server.client;
-
-import server.net.Broadcaster;
 import server.Server;
 
 import java.io.IOException;

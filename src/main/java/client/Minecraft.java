@@ -328,6 +328,10 @@ public class Minecraft implements Runnable {
                 Mouse.setGrabbed(true);
             } else if (chat.toggled) {
                 chat.setToggled(false);
+            } else if (currentScreen != null) {
+                currentScreen = null;
+                pauseMenu.visible = true;
+                Mouse.setGrabbed(false);
             } else {
                 pauseMenu.visible = true;
                 Mouse.setGrabbed(false);

@@ -19,11 +19,12 @@ public class OptionsScreen extends Screen {
 
     private int bg = -1;
 
-    private SliderComponent sGamma, sRenderDist;
+    private SliderComponent sGamma, sRenderDist, sFOV;
     private ButtonComponent btnBack;
 
     private boolean draggingGamma = false;
     private boolean draggingRender = false;
+    private boolean draggingFOV = false;
 
     private final Screen returnScreen;
     private final boolean backToInGame;
@@ -91,6 +92,7 @@ public class OptionsScreen extends Screen {
         int rowH = 60;
         int row1Y = height / 3 + 20;
         int row2Y = row1Y + rowH;
+        int row3Y = row2Y + rowH;
 
         if (sGamma == null) {
             sGamma = new SliderComponent("Brightness", panelX, row1Y, panelW, 18, 0f, 1f, Settings.getGamma());
@@ -105,8 +107,14 @@ public class OptionsScreen extends Screen {
         } else {
             sRenderDist.x = panelX; sRenderDist.y = row2Y; sRenderDist.w = panelW;
         }
+        if (sFOV == null) {
+            sFOV = new SliderComponent("FOV", panelX, row3Y, panelW, 18, 30f, 110f, Settings.getFOV());
+            sFOV.formatter = v -> String.format("%.0f°", v);
+        } else {
+            sFOV.x = panelX; sFOV.y = row3Y; sFOV.w = panelW;
+        }
 
-        int backY = row2Y + 56;
+        int backY = row3Y + 56;
         btnBack = new ButtonComponent("Back", (width - 160) / 2, backY, 160, 28);
 
         int mx = Mouse.getX();
@@ -119,21 +127,25 @@ public class OptionsScreen extends Screen {
                     // mouse down
                     if (hitTrack(sGamma, mx, my))   { draggingGamma  = true;  sGamma.setFromMouse(mx);   commitGamma(); }
                     if (hitTrack(sRenderDist, mx, my)) { draggingRender = true; sRenderDist.setFromMouse(mx); commitRenderDistance(); }
+                    if (hitTrack(sFOV, mx, my)) { draggingFOV = true; sFOV.setFromMouse(mx); commitFOV(); }
                     if (btnBack.contains(mx, my)) onBack();
                 } else {
                     // mouse up
                     draggingGamma = false;
                     draggingRender = false;
+                    draggingFOV = false;
                 }
             }
         }
 
         if (draggingGamma) { sGamma.setFromMouse(mx);   commitGamma(); }
         if (draggingRender) { sRenderDist.setFromMouse(mx); commitRenderDistance(); }
+        if (draggingFOV) { sFOV.setFromMouse(mx); commitFOV(); }
 
         // render sliders
         drawSlider(font, sGamma, mx, my);
         drawSlider(font, sRenderDist, mx, my);
+        drawSlider(font, sFOV, mx, my);
 
         // back button
         glDisable(GL_TEXTURE_2D);
@@ -234,6 +246,10 @@ public class OptionsScreen extends Screen {
         if (Settings.getRenderDistance() != prev) {
             SocketClient.sendRenderDistance(Settings.getRenderDistance());
         }
+    }
+
+    private void commitFOV() {
+        Settings.setFOV((int) sFOV.value);
     }
 
     private void onBack() {

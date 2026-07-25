@@ -14,6 +14,9 @@ public final class Settings {
     private static float gamma = 0.5f;
     private static int renderDistance = 8;
     private static boolean loaded = false;
+    private static int FOV = 70;
+    private static final int MIN_FOV = 30;
+    private static final int MAX_FOV = 110;
 
     private Settings() {}
 
@@ -31,6 +34,16 @@ public final class Settings {
     public static synchronized int getRenderDistance() {
         ensureLoaded();
         return renderDistance;
+    }
+    public static synchronized int getFOV() {
+        ensureLoaded();
+        return FOV;
+    }
+
+    public static synchronized void setFOV(int value) {
+        ensureLoaded();
+        FOV = Math.max(MIN_FOV, Math.min(MAX_FOV, value));
+        save();
     }
 
     public static synchronized void setRenderDistance(int value) {
@@ -57,14 +70,17 @@ public final class Settings {
         }
         gamma = parseFloat(p.getProperty("gamma"), gamma);
         renderDistance = parseInt(p.getProperty("render_distance"), renderDistance);
+        FOV = parseInt(p.getProperty("fov"), FOV);
         gamma = clamp(gamma, 0f, 1f);
         renderDistance = Math.max(2, Math.min(32, renderDistance));
+        FOV = Math.max(MIN_FOV, Math.min(MAX_FOV, FOV));
     }
 
     private static void save() {
         Properties p = new Properties();
         p.setProperty("gamma", Float.toString(gamma));
         p.setProperty("render_distance", Integer.toString(renderDistance));
+        p.setProperty("fov", Integer.toString(FOV));
         try (OutputStream out = Files.newOutputStream(PATH)) {
             p.store(out, "rd-multiplayer options");
         } catch (IOException e) {

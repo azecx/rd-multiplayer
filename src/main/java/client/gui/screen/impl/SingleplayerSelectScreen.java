@@ -12,9 +12,8 @@ import org.lwjgl.input.Mouse;
 
 public class SingleplayerSelectScreen extends Screen {
     private int bg = -1;
-    private ButtonComponent btnBack;
-    private final int panelW = 520;
-    private final int panelH = 430;
+
+    private ButtonComponent btnPlay, btnCreate, btnRename, btnDelete, btnCancel;
 
     @Override
     public void init() {
@@ -51,9 +50,9 @@ public class SingleplayerSelectScreen extends Screen {
         glTexCoord2f(0, 1); glVertex2f(0, height);
         glEnd();
 
-        String title = "Singleplayer";
+        String title = "Select World (in dev)";
         int titleX = (width - font.getStringWidth(title) * 2) / 2;
-        int titleY = height / 10;
+        int titleY = 12;
 
         glDisable(GL_TEXTURE_2D);
         glPushMatrix();
@@ -65,44 +64,59 @@ public class SingleplayerSelectScreen extends Screen {
         glPopMatrix();
         glEnable(GL_TEXTURE_2D);
 
-        int panelX = (width - panelW) / 2;
-        int panelY = height / 8 + 28;
+        int panelX = 0;
+        int panelY = 60;
+        int footerH = 82;
+        int panelW = width;
+        int panelH = height - panelY - footerH;
 
-        bgpanel(panelX, panelY, panelW, panelH);
+        drawWorldList(panelX, panelY, panelW, panelH);
 
-        String msg = "Coming Soon..";
-        int msgX = panelX + (panelW - font.getStringWidth(msg) * 2) / 2;
-        int msgY = panelY + (panelH / 2) - 10;
-
-        glDisable(GL_TEXTURE_2D);
-        glPushMatrix();
-        glTranslatef(msgX, msgY, 0);
-        glScalef(2f, 2f, 1f);
-        glEnable(GL_TEXTURE_2D);
-        font.drawString(msg, 0, 0, Color.WHITE, true);
-        glDisable(GL_TEXTURE_2D);
-        glPopMatrix();
-        glEnable(GL_TEXTURE_2D);
-
-        int btnW = 180;
+        int spacing = 18;
         int btnH = 28;
-        int btnX = panelX + (panelW - btnW) / 2;
-        int btnY = panelY + panelH + 16;
+        int footerY1 = panelY + panelH + 26;
+        int footerY2 = footerY1 + btnH + 10;
 
-        btnBack = new ButtonComponent("Back", btnX, btnY, btnW, btnH);
+        int bigW = 300;
+        int smallW = 140;
+
+        int row1Width = (bigW * 2) + spacing;
+        int row1X = (width - row1Width) / 2;
+
+        btnPlay = new ButtonComponent("Play Selected World", row1X, footerY1, bigW, btnH);
+        btnCreate = new ButtonComponent("Create New World", row1X + bigW + spacing, footerY1, bigW, btnH);
+
+        int row2Width = (smallW * 2) + bigW + (spacing * 2);
+        int row2X = (width - row2Width) / 2;
+
+        btnRename = new ButtonComponent("Rename", row2X, footerY2, smallW, btnH);
+        btnDelete = new ButtonComponent("Delete", row2X + smallW + spacing, footerY2, smallW, btnH);
+        btnCancel = new ButtonComponent("Cancel", row2X + (smallW + spacing) * 2, footerY2, bigW, btnH);
 
         int mx = Mouse.getX();
         int my = height - Mouse.getY() - 1;
 
         while (Mouse.next()) {
             if (Mouse.getEventButton() == 0 && Mouse.getEventButtonState()) {
-                if (btnBack.contains(mx, my)) {
-                    onBack();
+                if (btnPlay.contains(mx, my)) {
+                    onPlaySelectedWorld();
+                } else if (btnCreate.contains(mx, my)) {
+                    onCreateNewWorld();
+                } else if (btnRename.contains(mx, my)) {
+                    onRename();
+                } else if (btnDelete.contains(mx, my)) {
+                    onDelete();
+                } else if (btnCancel.contains(mx, my)) {
+                    onCancel();
                 }
             }
         }
 
-        drawButton(font, btnBack, btnBack.contains(mx, my));
+        drawButton(font, btnPlay, btnPlay.contains(mx, my));
+        drawButton(font, btnCreate, btnCreate.contains(mx, my));
+        drawButton(font, btnRename, btnRename.contains(mx, my));
+        drawButton(font, btnDelete, btnDelete.contains(mx, my));
+        drawButton(font, btnCancel, btnCancel.contains(mx, my));
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
@@ -116,7 +130,13 @@ public class SingleplayerSelectScreen extends Screen {
 
     private void drawButton(FontRenderer font, ButtonComponent button, boolean hovered) {
         glDisable(GL_TEXTURE_2D);
-        glColor4f(hovered ? 0.55f : 0.20f,hovered ? 0.55f : 0.20f,hovered ? 0.55f : 0.20f,0.85f);
+
+        glColor4f(
+                hovered ? 0.55f : 0.20f,
+                hovered ? 0.55f : 0.20f,
+                hovered ? 0.55f : 0.20f,
+                0.85f
+        );
 
         glBegin(GL_QUADS);
         glVertex2f(button.x, button.y);
@@ -134,13 +154,19 @@ public class SingleplayerSelectScreen extends Screen {
         glEnd();
 
         glEnable(GL_TEXTURE_2D);
-        font.drawString(button.label,button.x + (button.w - font.getStringWidth(button.label)) / 2,button.y + (button.h - font.getStringHeight()) / 2,hovered ? Color.YELLOW : Color.WHITE,true);
+        font.drawString(
+                button.label,
+                button.x + (button.w - font.getStringWidth(button.label)) / 2,
+                button.y + (button.h - font.getStringHeight()) / 2,
+                hovered ? Color.YELLOW : Color.WHITE,
+                true
+        );
     }
 
-    private void bgpanel(int x, int y, int w, int h) {
+    private void drawWorldList(int x, int y, int w, int h) {
         glDisable(GL_TEXTURE_2D);
 
-        glColor4f(0.00f, 0.00f, 0.00f, 0.50f);
+        glColor4f(0f, 0f, 0f, 0.58f);
         glBegin(GL_QUADS);
         glVertex2f(x, y);
         glVertex2f(x + w, y);
@@ -148,18 +174,29 @@ public class SingleplayerSelectScreen extends Screen {
         glVertex2f(x, y + h);
         glEnd();
 
-        glColor4f(1.00f, 1.00f, 1.00f, 0.9f);
-        glBegin(GL_LINE_LOOP);
+        glColor4f(0.18f, 0.18f, 0.18f, 1f);
+        glBegin(GL_LINES);
         glVertex2f(x, y);
         glVertex2f(x + w, y);
-        glVertex2f(x + w, y + h);
         glVertex2f(x, y + h);
+        glVertex2f(x + w, y + h);
         glEnd();
 
         glEnable(GL_TEXTURE_2D);
     }
 
-    private void onBack() {
+    // TODO: make these actually function
+    private void onPlaySelectedWorld() {}
+
+    private void onCreateNewWorld() {
+        Minecraft.mc.setScreen(new CreateWorldScreen());
+    }
+
+    private void onRename() {}
+
+    private void onDelete() {}
+
+    private void onCancel() {
         Minecraft.mc.setScreen(new MenuScreen());
     }
 

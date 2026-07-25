@@ -1,6 +1,7 @@
 package client.player.local;
 
 import client.Minecraft;
+import client.Settings;
 import org.lwjgl.BufferUtils;
 
 import java.nio.IntBuffer;
@@ -32,7 +33,7 @@ public class Camera {
     public void setup(float pt) {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(70, mc.width / (float) mc.height, 0.05F, 1000);
+        gluPerspective(Settings.getFOV(), mc.width / (float) mc.height, 0.05F, 1000);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         moveToPlayer(pt, mode);
@@ -46,7 +47,7 @@ public class Camera {
         viewportBuffer.flip();
         viewportBuffer.limit(16);
         gluPickMatrix(x, y, 5f, 5f, viewportBuffer);
-        gluPerspective(70f, mc.width / (float) mc.height, 0.05f, 1000f);
+        gluPerspective(Settings.getFOV(), mc.width / (float) mc.height, 0.05f, 1000f);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         moveToPlayer(pt, FIRST);
