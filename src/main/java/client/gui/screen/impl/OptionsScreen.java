@@ -178,8 +178,6 @@ public class OptionsScreen extends Screen {
     }
 
     private boolean hitTrack(SliderComponent s, int mx, int my) {
-        int trackY = s.y + s.h / 2 - 2;
-        int trackH = 4;
         return mx >= s.x && mx <= s.x + s.w && my >= s.y - 2 && my <= s.y + s.h + 4;
     }
 

@@ -11,9 +11,9 @@ public final class TimeBroadcaster {
     
     private TimeBroadcaster() {}
 
-    public static void start() {
+    public static Thread start() {
         Thread t = new Thread(() -> {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Thread.sleep(REBROADCAST_MS);
                 } catch (InterruptedException e) {
@@ -24,6 +24,7 @@ public final class TimeBroadcaster {
         }, "TimeBroadcaster");
         t.setDaemon(true);
         t.start();
+        return t;
     }
 
     public static void broadcastAll() {

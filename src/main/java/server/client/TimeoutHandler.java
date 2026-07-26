@@ -7,9 +7,9 @@ public class TimeoutHandler {
 
     private static final long TIMEOUT_MS = 10_000;
 
-    public static void start() {
+    public static Thread start() {
         Thread thread = new Thread(() -> {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 long now = System.currentTimeMillis();
 
                 for (Client client : Server.clients) {
@@ -24,11 +24,16 @@ public class TimeoutHandler {
                     }
                 }
 
-                try { Thread.sleep(1_000); } catch (InterruptedException ignored) {}
+                try {
+                    Thread.sleep(1_000);
+                } catch (InterruptedException e) {
+                    return;
+                }
             }
         }, "TimeoutHandler");
 
         thread.setDaemon(true);
         thread.start();
+        return thread;
     }
 }

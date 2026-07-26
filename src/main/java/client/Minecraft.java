@@ -164,6 +164,9 @@ public class Minecraft implements Runnable {
 
     public void applyDisconnect() {
         disconnectPending = false;
+        if (client.singleplayer.Singleplayer.isActive()) {
+            client.singleplayer.Singleplayer.stop();
+        }
         level = null;
         levelRenderer = null;
         localPlayer = null;

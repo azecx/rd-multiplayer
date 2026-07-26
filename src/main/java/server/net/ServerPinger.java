@@ -10,9 +10,9 @@ public final class ServerPinger {
 
     private ServerPinger() {}
 
-    public static void start() {
+    public static Thread start() {
         Thread t = new Thread(() -> {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Thread.sleep(PROBE_INTERVAL_MS);
                 } catch (InterruptedException e) {
@@ -30,5 +30,6 @@ public final class ServerPinger {
         }, "ServerPinger");
         t.setDaemon(true);
         t.start();
+        return t;
     }
 }

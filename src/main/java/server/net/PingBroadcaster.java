@@ -8,9 +8,9 @@ public final class PingBroadcaster {
 
     private PingBroadcaster() {}
 
-    public static void start() {
+    public static Thread start() {
         Thread t = new Thread(() -> {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Thread.sleep(BROADCAST_INTERVAL_MS);
                 } catch (InterruptedException e) {
@@ -23,5 +23,6 @@ public final class PingBroadcaster {
         }, "PingBroadcaster");
         t.setDaemon(true);
         t.start();
+        return t;
     }
 }

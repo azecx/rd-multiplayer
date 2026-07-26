@@ -6,11 +6,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Level {
     public static final int CHUNK_SIZE = LevelChunk.CHUNK_SIZE; // 16
-    private static final Path CHUNK_DIR = Paths.get("chunks");
+    private static final Path DEFAULT_CHUNK_DIR = Paths.get("chunks");
     private final ConcurrentHashMap<Long, LevelChunk> loadedChunks = new ConcurrentHashMap<>();
-    private final RegionStore regionStore = new RegionStore(CHUNK_DIR);
+    private final RegionStore regionStore;
 
-    public Level() {}
+    // server
+    public Level() {
+        this(DEFAULT_CHUNK_DIR);
+    }
+
+    // singleplayer
+    public Level(Path chunkDir) {
+        this.regionStore = new RegionStore(chunkDir);
+    }
 
     private static long key(int cx, int cy, int cz) {
         return ((long)(cx & 0x1FFFFF) << 42) | ((long)(cy & 0x1FFFFF) << 21) |  (long)(cz & 0x1FFFFF);

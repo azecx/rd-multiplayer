@@ -13,7 +13,6 @@ import client.gui.screen.components.FieldComponent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-@SuppressWarnings("unused")
 public class CreateWorldScreen extends Screen {
     private int bg = -1;
 
@@ -431,9 +430,11 @@ public class CreateWorldScreen extends Screen {
             worldName = "New World";
         }
 
-        System.out.println("Singleplayer is still in developement, Please wait for the new version");
+        if (!seed.isEmpty()) {
+            System.out.println("Seed \"" + seed + "\" Seed saved. seed gen currently doesnt work");
+        }
 
-        // TODO: World gen
+        client.singleplayer.Singleplayer.start(worldName);
     }
 
     private void onCancel() {
