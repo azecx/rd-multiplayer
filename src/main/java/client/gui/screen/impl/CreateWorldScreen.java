@@ -437,7 +437,7 @@ public class CreateWorldScreen extends Screen {
     }
 
     private void onCancel() {
-        Minecraft.mc.setScreen(new MenuScreen());
+        Minecraft.mc.setScreen(new SingleplayerSelectScreen());
     }
 
     @Override
