@@ -29,6 +29,7 @@ Read the socket protocol [here](https://github.com/9aze/rd-multiplayer/blob/main
 - Breaking/Placing blocks
 - Moving around, jumping and flying
 - Multiplayer (obviously)
+- Singleplayer
 - Chat with connection messages
 - Coordinates, Fps and Tablist HUD
 - Player rendering
