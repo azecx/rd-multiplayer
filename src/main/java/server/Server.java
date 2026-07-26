@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
 
-    /** Directory server.properties/banned_ips.json/auth.sqlite/chunks live under. "" = working directory. */
     private static Path dataDir = Paths.get("");
 
     private static Path PROPERTIES_PATH = Paths.get("server.properties");
@@ -39,10 +38,11 @@ public class Server {
     public static double  PLACE_RATE     = 5.0;    // places / sec
     public static double  BREAK_RATE     = 5.0;    // breaks / sec
     public static int     RENDER_DISTANCE = 8;
-    /** Vertical render distance, in cubic chunks (each 16 tall). */
     public static int     VERTICAL_RENDER_DISTANCE = 4;
     public static double  VOID_Y         = -64.0;
     public static boolean LOGS = true;
+
+    public static boolean REQUIRE_AUTH = true;
 
     public static Level level;
     public static AuthDatabase authDb;
@@ -64,26 +64,16 @@ public class Server {
     private static Thread shutdownHook;
 
     public static void main(String[] args) throws IOException {
-        start(Paths.get(""), null, null, true);
+        start(Paths.get(""), null, null, true, true);
         try {
             acceptThread.join();
         } catch (InterruptedException ignored) {}
     }
 
-    /**
-     * Starts the server. This is the same startup logic used for a dedicated
-     * server (via main()) and for an embedded singleplayer server; the wire
-     * protocol and ClientHandler logic are untouched either way, so this
-     * never affects compatibility with other rd-multiplayer clients/servers.
-     *
-     * @param dir           directory server.properties/banned_ips.json/auth.sqlite/chunks live under
-     * @param portOverride  if non-null, overrides the port from server.properties (0 = pick any free port)
-     * @param bindAddress   if non-null, binds only to this address (e.g. loopback for singleplayer);
-     *                      if null, binds all interfaces, matching prior dedicated-server behavior
-     * @param withConsole   whether to read admin commands from stdin (dedicated server only)
-     */
-    public static synchronized void start(Path dir, Integer portOverride, InetAddress bindAddress, boolean withConsole) throws IOException {
+    public static synchronized void start(Path dir, Integer portOverride, InetAddress bindAddress, boolean withConsole, boolean requireAuth) throws IOException {
         if (running) throw new IllegalStateException("Server is already running");
+
+        REQUIRE_AUTH = requireAuth;
 
         dataDir = dir != null ? dir : Paths.get("");
         PROPERTIES_PATH = dataDir.resolve("server.properties");
@@ -153,7 +143,6 @@ public class Server {
                     new Thread(() -> ClientHandler.handle(clientSocket)).start();
                 } catch (IOException e) {
                     if (running) e.printStackTrace();
-                    // else: socket was closed by stop() -- expected, loop exits below
                 }
             }
         }, "Server-Accept");
@@ -161,7 +150,6 @@ public class Server {
         acceptThread.start();
     }
 
-    /** Stops the server: closes all connections, saves the world, and shuts down background threads. */
     public static synchronized void stop() {
         if (!running) return;
         running = false;

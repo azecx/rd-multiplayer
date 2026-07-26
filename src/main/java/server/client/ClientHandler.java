@@ -57,7 +57,11 @@ public class ClientHandler {
             String existing = Server.authDb.getToken(username);
             String newTokenToSend = null;
 
-            if (existing == null) {
+            if (!Server.REQUIRE_AUTH) {
+                if (existing == null) {
+                    newTokenToSend = Server.authDb.registerNewToken(username);
+                }
+            } else if (existing == null) {
                 newTokenToSend = Server.authDb.registerNewToken(username);
                 System.out.println("Registered new account: " + username);
             } else {
