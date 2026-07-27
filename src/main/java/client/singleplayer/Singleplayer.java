@@ -45,7 +45,7 @@ public final class Singleplayer {
         try {
             Server.start(dir, 0, InetAddress.getLoopbackAddress(), false, false);
         } catch (IOException e) {
-            System.err.println("Failed to start the server for world \"" + Name + "\"");
+            System.err.println("Failed to start embedded server for world \"" + Name + "\"");
             e.printStackTrace();
             return;
         }
@@ -75,13 +75,53 @@ public final class Singleplayer {
         return names;
     }
 
-    public static synchronized boolean renameWorld(String oldName, String newName) {
-        String OldName = sanitize(oldName);
-        String NewName = sanitize(newName);
-        if (NewName.equals(OldName)) return true;
+    public static final class WorldInfo {
+        public final String name;
+        public final long lastModified;
+        public final long sizeBytes;
 
-        java.nio.file.Path from = worldDir(OldName);
-        java.nio.file.Path to = worldDir(NewName);
+        public WorldInfo(String name, long lastModified, long sizeBytes) {
+            this.name = name;
+            this.lastModified = lastModified;
+            this.sizeBytes = sizeBytes;
+        }
+    }
+
+    public static java.util.List<WorldInfo> listWorldInfos() {
+        java.util.List<WorldInfo> infos = new java.util.ArrayList<>();
+        java.io.File[] children = SAVES_DIR.toFile().listFiles();
+        if (children != null) {
+            for (java.io.File f : children) {
+                if (!f.isDirectory()) continue;
+                long[] stats = dirStats(f.toPath());
+                infos.add(new WorldInfo(f.getName(), stats[0], stats[1]));
+            }
+            infos.sort((a, b) -> a.name.compareToIgnoreCase(b.name));
+        }
+        return infos;
+    }
+
+    private static long[] dirStats(java.nio.file.Path dir) {
+        long[] stats = {dir.toFile().lastModified(), 0L};
+        try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(dir)) {
+            walk.filter(java.nio.file.Files::isRegularFile).forEach(p -> {
+                try {
+                    long mtime = java.nio.file.Files.getLastModifiedTime(p).toMillis();
+                    if (mtime > stats[0]) stats[0] = mtime;
+                    stats[1] += java.nio.file.Files.size(p);
+                } catch (IOException ignored) {}
+            });
+        } catch (IOException ignored) {}
+        return stats;
+    }
+
+    public static synchronized boolean renameWorld(String oldName, String newName) {
+        String safeOld = sanitize(oldName);
+        String safeNew = sanitize(newName);
+        if (safeNew.equals(safeOld)) return true;
+
+        java.nio.file.Path from = worldDir(safeOld);
+        java.nio.file.Path to = worldDir(safeNew);
 
         if (!java.nio.file.Files.isDirectory(from) || java.nio.file.Files.exists(to)) return false;
 
@@ -89,7 +129,7 @@ public final class Singleplayer {
             java.nio.file.Files.move(from, to);
             return true;
         } catch (IOException e) {
-            System.err.println("Failed to rename world \"" + OldName + "\" to \"" + NewName + "\"");
+            System.err.println("Failed to rename world \"" + safeOld + "\" to \"" + safeNew + "\"");
             e.printStackTrace();
             return false;
         }

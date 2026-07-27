@@ -10,7 +10,9 @@ import client.gui.screen.components.ButtonComponent;
 import client.gui.screen.components.FieldComponent;
 import client.singleplayer.Singleplayer;
 import java.awt.Color;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -21,11 +23,12 @@ public class SingleplayerSelectScreen extends Screen {
     private ButtonComponent btnPlay, btnCreate, btnRename, btnDelete, btnCancel;
     private ButtonComponent btnConfirmRename, btnCancelRename;
 
-    private List<String> worlds = new ArrayList<>();
+    private List<Singleplayer.WorldInfo> worlds = new ArrayList<>();
     private String selectedWorld = null;
     private int scrollRow = 0;
 
-    private static final int ROW_H = 22;
+    private static final int ROW_H = 50;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("M/d/yy h:mm a");
 
     private boolean renaming = false;
     private FieldComponent fRename;
@@ -42,8 +45,8 @@ public class SingleplayerSelectScreen extends Screen {
     }
 
     private void refreshWorlds() {
-        worlds = Singleplayer.listWorlds();
-        if (selectedWorld != null && !worlds.contains(selectedWorld)) {
+        worlds = Singleplayer.listWorldInfos();
+        if (selectedWorld != null && worlds.stream().noneMatch(w -> w.name.equals(selectedWorld))) {
             selectedWorld = null;
         }
         deleteArmed = false;
@@ -119,10 +122,8 @@ public class SingleplayerSelectScreen extends Screen {
     }
 
     private void renderListMode(FontRenderer font, int width, int height) {
-        int panelX = 0;
         int panelY = 60;
         int footerH = 82;
-        int panelW = width;
         int panelH = height - panelY - footerH;
 
         int mx = Mouse.getX();
@@ -143,6 +144,9 @@ public class SingleplayerSelectScreen extends Screen {
 
         int row1Width = (bigW * 2) + spacing;
         int row1X = (width - row1Width) / 2;
+
+        int panelX = 0;
+        int panelW = width;
 
         btnPlay = new ButtonComponent("Play Selected World", row1X, footerY1, bigW, btnH);
         btnCreate = new ButtonComponent("Create New World", row1X + bigW + spacing, footerY1, bigW, btnH);
@@ -169,9 +173,9 @@ public class SingleplayerSelectScreen extends Screen {
                 for (int i = 0; i < visibleRows; i++) {
                     int idx = scrollRow + i;
                     if (idx >= worlds.size()) break;
-                    int rowY = panelY + 2 + i * ROW_H;
+                    int rowY = panelY + i * ROW_H;
                     if (mx >= panelX && mx <= panelX + panelW && my >= rowY && my <= rowY + ROW_H) {
-                        selectedWorld = worlds.get(idx);
+                        selectedWorld = worlds.get(idx).name;
                         deleteArmed = false;
                         rowClicked = true;
                         break;
@@ -355,34 +359,40 @@ public class SingleplayerSelectScreen extends Screen {
 
         if (worlds.isEmpty()) {
             glEnable(GL_TEXTURE_2D);
-            String msg = "No worlds are here :(";
+            String msg = "No worlds yet -- click Create New World";
             font.drawString(msg, x + (w - font.getStringWidth(msg)) / 2, y + 10, Color.LIGHT_GRAY, true);
             return;
         }
+
+        int lh = font.getStringHeight();
 
         for (int i = 0; i < visibleRows; i++) {
             int idx = scrollRow + i;
             if (idx >= worlds.size()) break;
 
-            String name = worlds.get(idx);
-            int rowY = y + 2 + i * ROW_H;
-            boolean selected = name.equals(selectedWorld);
+            Singleplayer.WorldInfo world = worlds.get(idx);
+            int rowY = y + i * ROW_H;
+            boolean selected = world.name.equals(selectedWorld);
             boolean hovered = mx >= x && mx <= x + w && my >= rowY && my <= rowY + ROW_H;
 
             if (selected || hovered) {
-                glColor4f(selected ? 0.25f : 0.15f, selected ? 0.5f : 0.15f, selected ? 0.25f : 0.15f, 0.7f);
+                glDisable(GL_TEXTURE_2D);
+                glColor4f(selected ? 0.3f : 0.2f, selected ? 0.3f : 0.2f, selected ? 0.3f : 0.2f, 0.4f);
                 glBegin(GL_QUADS);
-                glVertex2f(x + 2, rowY);
-                glVertex2f(x + w - 2, rowY);
-                glVertex2f(x + w - 2, rowY + ROW_H);
-                glVertex2f(x + 2, rowY + ROW_H);
+                glVertex2f(x, rowY);
+                glVertex2f(x + w, rowY);
+                glVertex2f(x + w, rowY + ROW_H);
+                glVertex2f(x, rowY + ROW_H);
                 glEnd();
             }
 
             glEnable(GL_TEXTURE_2D);
-            int lh = font.getStringHeight();
-            font.drawString(name, x + 10, rowY + (ROW_H - lh) / 2, selected ? Color.YELLOW : Color.WHITE, true);
-            glDisable(GL_TEXTURE_2D);
+
+            String subtitle = world.name + " (" + DATE_FORMAT.format(new Date(world.lastModified))
+                    + ", " + String.format("%.2f MB", world.sizeBytes / (1024.0 * 1024.0)) + ")";
+
+            font.drawString(world.name, x + (w - font.getStringWidth(world.name)) / 2, rowY + 6, selected ? Color.YELLOW : Color.WHITE, true);
+            font.drawString(subtitle, x + (w - font.getStringWidth(subtitle)) / 2, rowY + 6 + lh + 4, new Color(170, 170, 170), true);
         }
 
         glEnable(GL_TEXTURE_2D);
