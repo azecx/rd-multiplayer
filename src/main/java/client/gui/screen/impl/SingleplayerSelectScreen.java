@@ -123,7 +123,7 @@ public class SingleplayerSelectScreen extends Screen {
 
     private void renderListMode(FontRenderer font, int width, int height) {
         int panelY = 60;
-        int footerH = 82;
+        int footerH = 144; // button height
         int panelH = height - panelY - footerH;
 
         int mx = Mouse.getX();
@@ -359,7 +359,7 @@ public class SingleplayerSelectScreen extends Screen {
 
         if (worlds.isEmpty()) {
             glEnable(GL_TEXTURE_2D);
-            String msg = "No worlds yet -- click Create New World";
+            String msg = "make a world";
             font.drawString(msg, x + (w - font.getStringWidth(msg)) / 2, y + 10, Color.LIGHT_GRAY, true);
             return;
         }
