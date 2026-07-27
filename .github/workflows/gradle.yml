@@ -26,21 +26,15 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Run validation wrapper
-        uses: gradle/actions/wrapper-validation@v4
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
 
       - name: Build jars
-        run: ./gradlew buildServer buildClient
+        run: ./gradlew buildClient buildServer
 
       - name: Rename jars
         run: |
-          mv build/libs/rd-multiplayer-client-*.jar build/libs/rd-client.jar
-          mv build/libs/rd-multiplayer-server-*.jar build/libs/rd-server.jar
+          mv build/dist/rd-client-*.jar build/dist/rd-client.jar
+          mv build/dist/rd-server-*.jar build/dist/rd-server.jar
 
       - name: Get short commit hash
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -53,7 +47,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release list --limit 100 --json tagName -q '.[].tagName' \
-
             | xargs -I {} gh release delete {} --yes --cleanup-tag || true
 
       - name: Create fresh latest release
@@ -65,6 +58,6 @@ jobs:
           body: |
             Automated build from commit [${{ steps.vars.outputs.sha_short }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
           files: |
-            build/libs/rd-client.jar
-            build/libs/rd-server.jar
+            build/dist/rd-client.jar
+            build/dist/rd-server.jar
           make_latest: true
