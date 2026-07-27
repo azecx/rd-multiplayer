@@ -17,7 +17,6 @@ public class SocketClient implements Runnable {
     private final String host;
     private final int port;
     private final String username;
-    /** Identifier used in the .auth file ("host:port"). */
     private final String serverId;
     private Socket socket;
     private DataOutputStream out;
@@ -103,6 +102,7 @@ public class SocketClient implements Runnable {
 
                 Minecraft mc = Minecraft.mc;
                 if (mc == null) break;
+                if (mc.socket != this) break;
 
                 switch (packetId) {
 

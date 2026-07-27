@@ -167,6 +167,14 @@ public class Minecraft implements Runnable {
         if (client.singleplayer.Singleplayer.isActive()) {
             client.singleplayer.Singleplayer.stop();
         }
+        if (socket != null) {
+            socket.disconnect();
+            socket = null;
+        }
+        if (socketThread != null) {
+            socketThread.interrupt();
+            socketThread = null;
+        }
         level = null;
         levelRenderer = null;
         localPlayer = null;
@@ -174,6 +182,7 @@ public class Minecraft implements Runnable {
         playerManager = null;
         levelReady = false;
         spawnReceived = false;
+        lastGrabbed = false;
         Mouse.setGrabbed(false);
         currentScreen = new MenuScreen();
     }

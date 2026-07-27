@@ -431,7 +431,7 @@ public class CreateWorldScreen extends Screen {
         }
 
         if (!seed.isEmpty()) {
-            System.out.println("Seed \"" + seed + "\" Seed saved. seed gen currently doesnt work");
+            System.out.println("Seed \"" + seed + "\"");
         }
 
         client.singleplayer.Singleplayer.start(worldName);

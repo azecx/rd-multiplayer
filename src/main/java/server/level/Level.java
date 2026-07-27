@@ -10,12 +10,10 @@ public class Level {
     private final ConcurrentHashMap<Long, LevelChunk> loadedChunks = new ConcurrentHashMap<>();
     private final RegionStore regionStore;
 
-    // server
     public Level() {
         this(DEFAULT_CHUNK_DIR);
     }
-
-    // singleplayer
+    
     public Level(Path chunkDir) {
         this.regionStore = new RegionStore(chunkDir);
     }
